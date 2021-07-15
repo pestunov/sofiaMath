@@ -10,9 +10,9 @@ import time
 import mysecure
 import random
 
-def generateTask(xxx):
-    ii = random.randint(1,xxx)
-    jj = random.randint(1,xxx)
+def generateTask(_order):
+    ii = random.randint(1,_order)
+    jj = random.randint(1,_order)
     if ii >= jj:
         strr = ('{} - {} = ?'.format(ii,jj))
         answer = dif(ii,jj)
@@ -28,6 +28,12 @@ def dif(a,b):
 def summ(a,b):
 #    return '...'
     return a+b
+
+def generateAnswer(_answer, _num):
+    res = [str(_answer + random.randint(int(-_answer/2), int(_answer/2))) for _ in range(_num)]
+    pos = random.randint(0,_num-1)
+    res[pos] = str(_answer)
+    return res
 
 level = {'easiest': 10,
          'easy': 20,
@@ -65,7 +71,7 @@ def send_text(message):
             norder = level['easy']
             cyc = 2
         if message.text.lower() == 'первоклашка':
-            bot.send_message(message.chat.id, 'вперед школота!!!')
+            bot.send_message(message.chat.id, 'вперед школота-та!!!')
             norder = level['good']
             cyc = 2
         if message.text.lower() == 'институт':
@@ -83,12 +89,17 @@ def send_text(message):
 
     if cyc == 2:
         strr, answer = generateTask(norder)
+        a1, a2, a3, a4, a5, a6 = generateAnswer(answer, 6)
 
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row('23', str(answer), '56')
-        keyboard.row(i for i in [1,2,3])
+        keyboard.row(a1, a2, a3)
+        keyboard.row(a4, a5, a6)
         keyboard.row('сдаюсь', '/start')
         bot.send_message(message.chat.id, strr, reply_markup=keyboard)
+        if message.text.lower() == str(answer):
+            bot.send_message(message.chat.id, 'Правильно')
+            
+
         
 
     if message.text.lower() == 'привет':
@@ -99,5 +110,5 @@ def send_text(message):
 #         textt = message.text.upper()
 #         bot.send_message(message.chat.id, 'что это? {}'.format(textt))
         
-bot.polling()
+bot.polling(none_stop = False)
 
