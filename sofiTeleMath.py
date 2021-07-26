@@ -35,6 +35,9 @@ def generateAnswer(_answer, _num):
     res[pos] = str(_answer)
     return res
 
+def _():
+    pass
+
 level = {'easiest': 10,
          'easy': 20,
          'good': 50,
@@ -43,7 +46,8 @@ level = {'easiest': 10,
          'koval':1000}
 
 NNN = level['math']
-cyc = norder = 0
+cyc = norder = score = countt = 0
+answer = 0
 
 bot = telebot.TeleBot(mysecure.telebotToken)
 
@@ -53,14 +57,38 @@ keyboard1.row('институт','академег', 'ковалевская')
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    global cyc
-    bot.send_message(message.chat.id, 'Привет {}, займемся математикой'.format(message.from_user.first_name))
-    bot.send_message(message.chat.id, 'Выбери уровень'.format(message.from_user.first_name), reply_markup=keyboard1)
+    global cyc,  norder, answer, countt, score
+    bot.send_message(message.chat.id, 'Привет {}, займемся математикой. Выбери уровень, гений!'.format(message.from_user.first_name))
     cyc = 1
+    countt = 10
 
 @bot.message_handler(content_types=['text'])
 def send_text(message):
-    global cyc,  norder
+    global cyc,  norder, answer, countt, score
+    if cyc == 2:
+        if message.text.lower() in ['сдаюсь', 'дальше']:
+            bot.send_message(message.chat.id, '{}, слабак'.format(answer))
+        elif message.text.lower() == str(answer):
+            bot.send_message(message.chat.id, 'правильно')
+            countt -= 1
+            score +=1
+        else:
+            bot.send_message(message.chat.id, 'упс! {}'.format(answer))
+            countt -= 1
+            score -=2
+        
+        if countt == 0:
+            bot.send_message(message.chat.id, 'все! ты набрал {} баллов'.format(score))
+            cyc = 3
+        else:
+            strr, answer = generateTask(norder)
+            strr = f'{countt}) {strr}'
+            a1, a2, a3, a4, a5 = generateAnswer(answer, 5)
+            keyboard = telebot.types.ReplyKeyboardMarkup(True)
+            keyboard.row(a1, a2, a3, a4, a5)
+            keyboard.row('сдаюсь', '/start')
+            bot.send_message(message.chat.id, strr, reply_markup=keyboard)
+            
     if cyc == 1:
         if message.text.lower() == 'ясельки':
             bot.send_message(message.chat.id, 'ну ладно, малыш, поехали...')
@@ -86,19 +114,15 @@ def send_text(message):
             bot.send_message(message.chat.id, 'сейчас ты подотрешься...')
             norder = level['koval']
             cyc = 2
+        if cyc == 2:
+            strr, answer = generateTask(norder)
+            a1, a2, a3, a4, a5 = generateAnswer(answer, 5)
+            keyboard = telebot.types.ReplyKeyboardMarkup(True)
+            keyboard.row(a1, a2, a3, a4, a5)
+            keyboard.row('сдаюсь', '/start')
+            bot.send_message(message.chat.id, strr, reply_markup=keyboard)
 
-    if cyc == 2:
-        strr, answer = generateTask(norder)
-        a1, a2, a3, a4, a5, a6 = generateAnswer(answer, 6)
 
-        keyboard = telebot.types.ReplyKeyboardMarkup(True)
-        keyboard.row(a1, a2, a3)
-        keyboard.row(a4, a5, a6)
-        keyboard.row('сдаюсь', '/start')
-        bot.send_message(message.chat.id, strr, reply_markup=keyboard)
-        if message.text.lower() == str(answer):
-            bot.send_message(message.chat.id, 'Правильно')
-            
 
         
 
@@ -110,5 +134,4 @@ def send_text(message):
 #         textt = message.text.upper()
 #         bot.send_message(message.chat.id, 'что это? {}'.format(textt))
         
-bot.polling(none_stop = False)
-
+bot.polling(none_stop = True)
